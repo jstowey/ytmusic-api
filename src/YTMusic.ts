@@ -82,8 +82,9 @@ export default class YTMusic {
 		cookies?: string
 		GL?: string
 		HL?: string
+		accessToken?: string
 	}) {
-		const { cookies, GL, HL } = options ?? {}
+		const { cookies, GL, HL, accessToken } = options ?? {}
 
 		if (cookies) {
 			for (const cookieString of cookies.split("; ")) {
@@ -121,6 +122,7 @@ export default class YTMusic {
 
 		if (GL) this.config.GL = GL
 		if (HL) this.config.HL = HL
+		if (accessToken) this.config.accessToken = accessToken
 
 		return this
 	}
@@ -154,6 +156,10 @@ export default class YTMusic {
 			"X-YouTube-Page-Label": this.config.PAGE_BUILD_LABEL,
 			"X-YouTube-Utc-Offset": String(-new Date().getTimezoneOffset()),
 			"X-YouTube-Time-Zone": new Intl.DateTimeFormat().resolvedOptions().timeZone,
+		}
+
+		if (this.config.accessToken) {
+			headers['Authorization'] = `Bearer ${this.config.accessToken}`
 		}
 
 		const searchParams = new URLSearchParams({
