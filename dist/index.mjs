@@ -1899,8 +1899,38 @@ var YTMusic = class {
       }
     }
     const html = (await this.client.get("/")).data;
-    const setConfigs = html.match(/ytcfg\.set\(.*\)/) || [];
-    const configs = setConfigs.map((c) => c.slice(10, -1)).map((s) => {
+    const extractJsonArgs = (src) => {
+      const results = [];
+      let i = 0;
+      while ((i = src.indexOf("ytcfg.set(", i)) !== -1) {
+        i += 10;
+        let depth = 0, inStr = false, esc = false;
+        const start = i;
+        while (i < src.length) {
+          const ch = src[i];
+          if (esc) {
+            esc = false;
+          } else if (ch === "\\" && inStr) {
+            esc = true;
+          } else if (ch === '"') {
+            inStr = !inStr;
+          } else if (!inStr) {
+            if (ch === "{") depth++;
+            else if (ch === "}") {
+              depth--;
+              if (depth === 0) {
+                results.push(src.slice(start, i + 1));
+                i++;
+                break;
+              }
+            }
+          }
+          i++;
+        }
+      }
+      return results;
+    };
+    const configs = extractJsonArgs(html).map((s) => {
       try {
         return JSON.parse(s);
       } catch {
